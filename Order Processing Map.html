@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordering Process — Smart Technologies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #c12542;
+  --dark: #161a1a;
+  --mid: #222828;
+  --light: #cfd0d3;
+  --gray: #444444;
+  --white: #ffffff;
+  --red-dim: rgba(193,37,66,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--dark); color: var(--white); overflow-x: hidden; }
+
+/* ─── SPLASH ─────────────────────────────────────── */
+#splash {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--dark);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity .6s ease, transform .6s ease;
+}
+#splash.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+.splash-grid {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.splash-grid::before {
+  content: '';
+  position: absolute; inset: -50%;
+  background-image:
+    linear-gradient(rgba(193,37,66,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(193,37,66,.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridpan 20s linear infinite;
+}
+@keyframes gridpan { to { transform: translate(48px, 48px); } }
+
+.splash-accent {
+  position: absolute;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(193,37,66,.22) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  pointer-events: none;
+}
+
+.splash-inner { position: relative; z-index: 2; text-align: center; padding: 0 24px; }
+
+.splash-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: .2em;
+  color: var(--red); text-transform: uppercase;
+  opacity: 0; animation: fadeup .5s .2s ease forwards;
+}
+.splash-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(64px, 12vw, 120px);
+  line-height: .95; letter-spacing: .01em;
+  color: var(--white);
+  margin: 12px 0 6px;
+  opacity: 0; animation: fadeup .6s .4s ease forwards;
+}
+.splash-title span { color: var(--red); }
+.splash-sub {
+  font-size: 15px; font-weight: 300; color: var(--light);
+  max-width: 420px; margin: 0 auto 40px;
+  line-height: 1.6;
+  opacity: 0; animation: fadeup .6s .6s ease forwards;
+}
+.splash-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--red); color: var(--white);
+  border: none; border-radius: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; letter-spacing: .06em;
+  text-transform: uppercase; padding: 14px 32px;
+  cursor: pointer; transition: background .2s, transform .15s;
+  opacity: 0; animation: fadeup .6s .8s ease forwards;
+}
+.splash-btn:hover { background: #a51f38; transform: translateY(-2px); }
+.splash-btn svg { width: 16px; height: 16px; }
+
+.splash-stats {
+  display: flex; gap: 48px; margin-top: 56px;
+  opacity: 0; animation: fadeup .6s 1s ease forwards;
+}
+.stat-item { text-align: center; }
+.stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--red); line-height: 1; }
+.stat-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--light); margin-top: 3px; }
+
+@keyframes fadeup {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── MAIN APP ───────────────────────────────────── */
+#app {
+  display: none;
+  min-height: 100vh;
+  background: #f5f5f4;
+}
+#app.visible { display: block; }
+
+/* HEADER */
+.app-header {
+  background: var(--dark);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+  position: sticky; top: 0; z-index: 50;
+  border-bottom: 1px solid rgba(193,37,66,.3);
+}
+.header-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: .06em; color: var(--white);
+  display: flex; align-items: center; gap: 10px;
+}
+.header-logo .dot { color: var(--red); }
+.header-tag {
+  font-size: 11px; font-weight: 500; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--red);
+  background: var(--red-dim); padding: 4px 10px; border-radius: 3px;
+}
+
+/* HERO BAND */
+.app-hero {
+  background: var(--mid);
+  padding: 40px 32px 36px;
+  border-bottom: 3px solid var(--red);
+  position: relative; overflow: hidden;
+}
+.app-hero::after {
+  content: 'ORDERING PROCESS';
+  position: absolute; right: -10px; top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 120px; color: rgba(255,255,255,.03);
+  pointer-events: none; white-space: nowrap; line-height: 1;
+}
+.hero-label {
+  font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--red); margin-bottom: 8px;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px; color: var(--white); line-height: 1; margin-bottom: 10px;
+}
+.hero-sub {
+  font-size: 13px; color: var(--light); font-weight: 300; max-width: 560px; line-height: 1.6;
+}
+.hero-meta {
+  display: flex; gap: 24px; margin-top: 20px;
+}
+.meta-chip {
+  font-size: 11px; font-weight: 500; letter-spacing: .06em;
+  color: var(--light); display: flex; align-items: center; gap: 6px;
+}
+.meta-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+
+/* CONTENT AREA */
+.app-content { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* TOOLBAR */
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin-bottom: 20px;
+}
+.toolbar-label {
+  font-size: 10px; font-weight: 500; letter-spacing: .12em;
+  text-transform: uppercase; color: #888; margin-right: 4px;
+}
+.role-btn {
+  font-size: 12px; font-weight: 500; padding: 5px 12px;
+  border-radius: 3px; border: 1px solid #d4d4d0;
+  background: #fff; color: #555; cursor: pointer;
+  transition: all .15s; letter-spacing: .02em;
+}
+.role-btn:hover { border-color: var(--red); color: var(--red); }
+.role-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+.role-btn[data-role="Rep"].active        { background: #1d4ed8; border-color: #1d4ed8; }
+.role-btn[data-role="Admin"].active      { background: #be185d; border-color: #be185d; }
+.role-btn[data-role="Billing"].active    { background: #047857; border-color: #047857; }
+.role-btn[data-role="Shop Tech"].active  { background: #b45309; border-color: #b45309; }
+.role-btn[data-role="Jeannette"].active  { background: #6d28d9; border-color: #6d28d9; }
+.role-btn[data-role="Help Desk"].active  { background: #c12542; border-color: #c12542; }
+.role-btn[data-role="Automated"].active  { background: #0369a1; border-color: #0369a1; }
+
+/* LEGEND */
+.legend {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 24px; padding: 12px 16px;
+  background: #fff; border-radius: 6px;
+  border: 1px solid #e4e4e1;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; font-weight: 500; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* PHASES */
+.phase {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e4e4e1;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  transition: box-shadow .2s;
+}
+.phase:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.phase-header {
+  padding: 8px 16px;
+  background: var(--dark);
+  color: var(--light);
+  font-size: 10px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+}
+.phase-num {
+  background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700;
+  width: 18px; height: 18px; border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.phase-body {
+  padding: 14px 16px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;
+}
+
+/* STEPS */
+.step, .decision {
+  border-radius: 6px; border: 1.5px solid;
+  padding: 10px 12px; cursor: pointer;
+  transition: all .18s;
+  min-width: 130px; max-width: 180px; flex: 0 0 auto;
+  position: relative;
+}
+.step:hover, .decision:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+.step.dimmed, .decision.dimmed {
+  opacity: .18; pointer-events: none;
+}
+.step-name { font-size: 12px; font-weight: 500; line-height: 1.35; margin-bottom: 4px; color: #1a1a1a; }
+.step-role { font-size: 10px; color: #777; line-height: 1.3; }
+.step-badge {
+  position: absolute; top: -7px; right: 8px;
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  padding: 2px 6px; border-radius: 3px; text-transform: uppercase;
+}
+.auto-badge { background: #bfdbfe; color: #1e3a8a; }
+.manual-badge { background: #fde68a; color: #78350f; }
+
+.decision {
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 5px,
+    rgba(0,0,0,.02) 5px, rgba(0,0,0,.02) 10px
+  );
+}
+.connector {
+  font-size: 10px; font-weight: 500; letter-spacing: .05em;
+  color: #999; padding: 4px 8px;
+  background: #f5f5f4; border-radius: 3px;
+  border: 1px solid #e4e4e1;
+  white-space: nowrap; align-self: center;
+  text-transform: uppercase;
+}
+
+/* ─── MODAL ──────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(22,26,26,.7);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: #fff; border-radius: 10px;
+  padding: 0; max-width: 400px; width: 92%;
+  position: relative;
+  transform: translateY(12px) scale(.98);
+  transition: transform .25s ease;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.25);
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+.modal-stripe {
+  height: 4px; background: var(--red); width: 100%;
+}
+.modal-body-wrap { padding: 20px 22px 22px; }
+.modal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.modal-title { font-size: 16px; font-weight: 500; color: #111; line-height: 1.3; }
+.modal-close {
+  background: #f5f5f4; border: none; border-radius: 4px;
+  width: 28px; height: 28px; font-size: 16px; cursor: pointer;
+  color: #666; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.modal-close:hover { background: #eee; }
+.modal-role-tag {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--dark); color: #fff; margin-bottom: 14px;
+}
+.modal-desc {
+  font-size: 13px; color: #333; line-height: 1.7; margin-bottom: 16px;
+}
+.modal-type-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  padding: 5px 10px; border-radius: 4px;
+}
+
+/* FOOTER */
+.app-footer {
+  background: var(--dark);
+  border-top: 1px solid rgba(255,255,255,.06);
+  padding: 16px 32px;
+  text-align: center;
+  font-size: 11px; color: #555; letter-spacing: .05em;
+}
+.app-footer span { color: var(--red); }
+
+</style>
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══════════════════════════════════════════════════ -->
+<div id="splash">
+  <div class="splash-grid"></div>
+  <div class="splash-accent"></div>
+
+  <div class="splash-inner">
+    <div class="splash-eyebrow">Smart Technologies · Internal Process Documentation</div>
+    <div class="splash-title">Ordering<br><span>Process</span></div>
+    <div class="splash-sub">An interactive guide to how deals move from submission to delivery. Click any step to understand what happens, who's responsible, and whether it's automated.</div>
+    <button class="splash-btn" onclick="launchApp()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      View the Process Map
+    </button>
+    <div class="splash-stats">
+      <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">Phases</div></div>
+      <div class="stat-item"><div class="stat-num">6</div><div class="stat-label">Roles</div></div>
+      <div class="stat-item"><div class="stat-num">18</div><div class="stat-label">Steps</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ══════════════════════════════════════════════════ -->
+<div id="app">
+
+  <header class="app-header">
+    <div class="header-logo">Smart<span class="dot">.</span>Technologies</div>
+    <div class="header-tag">Ordering Process Map</div>
+  </header>
+
+  <div class="app-hero">
+    <div class="hero-label">Process Documentation</div>
+    <div class="hero-title">Ordering Process</div>
+    <div class="hero-sub">Includes Schedule Delivery and Welcome Call workflows. Click any step for a plain-English explanation. Filter by your role to see only what's relevant to you.</div>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="dot"></span>7 Phases</div>
+      <div class="meta-chip"><span class="dot"></span>6 Roles</div>
+      <div class="meta-chip"><span class="dot"></span>Click any step to learn more</div>
+    </div>
+  </div>
+
+  <div class="app-content">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <span class="toolbar-label">Filter by role:</span>
+      <button class="role-btn active" data-role="All" onclick="filterRole(this,'All')">All</button>
+      <button class="role-btn" data-role="Rep" onclick="filterRole(this,'Rep')">Rep</button>
+      <button class="role-btn" data-role="Admin" onclick="filterRole(this,'Admin')">Admin</button>
+      <button class="role-btn" data-role="Billing" onclick="filterRole(this,'Billing')">Billing</button>
+      <button class="role-btn" data-role="Shop Tech" onclick="filterRole(this,'Shop Tech')">Shop Tech</button>
+      <button class="role-btn" data-role="Jeannette" onclick="filterRole(this,'Jeannette')">Jeannette</button>
+      <button class="role-btn" data-role="Help Desk" onclick="filterRole(this,'Help Desk')">Help Desk</button>
+      <button class="role-btn" data-role="Automated" onclick="filterRole(this,'Automated')">Automated</button>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#bfdbfe;border:1px solid #93c5fd"></div>Automated — DocuWare handles this</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fde68a;border:1px solid #fbbf24"></div>Manual — a person does this</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#86efac;border:1px solid #4ade80"></div>Rep</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f9a8d4;border:1px solid #f472b6"></div>Admin</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fcd34d;border:1px solid #f59e0b"></div>Shop Tech</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd;border:1px solid #a78bfa"></div>Jeannette</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fca5a5;border:1px solid #f87171"></div>Help Desk</div>
+    </div>
+
+    <!-- ── PHASE 1 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">1</span>Deal Submission</div>
+      <div class="phase-body">
+        <div class="step" data-roles="Rep" data-auto="manual" data-title="Rep: Submit NDS + Product Config + Contracts" data-desc="The sales rep submits the New Deal Submission (NDS) form along with product configurations and signed contracts. This single action kicks off the entire ordering process in DocuWare. Nothing moves forward until this is complete." onclick="openModal(this)" style="border-color:#86efac;background:#f0fdf4">
+          <div class="step-name">Rep: Submit NDS + Product Config + Contracts</div>
+          <div class="step-role">Rep</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+        <div class="connector">triggers ›</div>
+        <div class="step" data-roles="Automated" data-auto="auto" data-title="Order Tracking Started" data-desc="DocuWare automatically creates an Order Tracking record and updates the document status to 'NDS Submitted' the moment the rep submits the deal package. No one needs to do anything — this happens instantly." onclick="openModal(this)" style="border-color:#93c5fd;background:#eff6ff">
+          <div class="step-name">Order tracking starts · status → NDS Submitted</div>
+          <div class="step-role">Automated</div>
+          <span class="step-badge auto-badge">Auto</span>
+        </div>
+        <div class="connector">+ triggers ›</div>
+        <div class="step" data-roles="Automated" data-auto="auto" data-title="Welcome Email Sent" data-desc="When the document status moves to 'Reviewing', DocuWare automatically fires a Welcome Email to the customer. This runs in parallel with the admin review — the customer is notified while the team processes the deal." onclick="openModal(this)" style="border-color:#93c5fd;background:#eff6ff">
+          <div class="step-name">Welcome email sent to customer</div>
+          <div class="step-role">Automated · triggers on Reviewing status</div>
+          <span class="step-badge auto-badge">Auto</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 2 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">2</span>Payment Type Check</div>
+      <div class="phase-body">
+        <div class="decision" data-roles="Admin" data-auto="manual" data-title="Decision: Cash or Finance?" data-desc="The system checks whether this is a cash purchase or a financed deal. This is a fork in the road: cash deals skip NDS approval and go straight to invoice creation, while financed deals must wait for NDS approval before moving forward." onclick="openModal(this)" style="border-color:#d8b4fe;background:#faf5ff">
+          <div class="step-name">⬡ Decision: Cash or Finance?</div>
+          <div class="step-role">System check</div>
+        </div>
+        <div class="connector">if cash ›</div>
+        <div class="step" data-roles="Admin" data-auto="manual" data-title="Admin: Create Invoice" data-desc="For cash deals, the admin manually creates an invoice in the system. Because no financing is involved, this bypasses the NDS approval wait entirely and moves directly into payment collection." onclick="openModal(this)" style="border-color:#f9a8d4;background:#fdf2f8">
+          <div class="step-name">Admin: Create invoice</div>
+          <div class="step-role">Admin</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+        <div class="connector">then ›</div>
+        <div class="step" data-roles="Billing" data-auto="manual" data-title="Billing: Collect Payment" data-desc="The billing team collects payment from the customer. Once payment is confirmed, the process continues downstream to the deal document review stage." onclick="openModal(this)" style="border-color:#6ee7b7;background:#f0fdf4">
+          <div class="step-name">Billing: Collect payment</div>
+          <div class="step-role">Billing</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 3 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">3</span>NDS Approval · Finance path (runs in parallel)</div>
+      <div class="phase-body">
+        <div class="step" data-roles="Automated" data-auto="auto" data-title="Product Config Submitted · On Hold for NDS" data-desc="On the finance path, the product configuration is submitted and the deal is automatically placed 'On Hold — Wait for NDS Approval'. The deal is frozen here until NDS is officially approved. Nothing proceeds until that happens." onclick="openModal(this)" style="border-color:#93c5fd;background:#eff6ff">
+          <div class="step-name">Product config submitted · On Hold for NDS</div>
+          <div class="step-role">Automated</div>
+          <span class="step-badge auto-badge">Auto</span>
+        </div>
+        <div class="connector">NDS approved ›</div>
+        <div class="step" data-roles="Jeannette" data-auto="manual" data-title="Jeannette: Payment Status Check" data-desc="Jeannette checks and records the payment status. If a PO (Purchase Order) payment has been received, the deal moves forward to confirm items. If the machine is not in stock, she flags that separately for resolution." onclick="openModal(this)" style="border-color:#c4b5fd;background:#faf5ff">
+          <div class="step-name">Jeannette: Payment status check</div>
+          <div class="step-role">Jeannette</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+        <div class="connector">PO paid ›</div>
+        <div class="step" data-roles="Admin" data-auto="manual" data-title="Ordering: Confirm Items Received" data-desc="The ordering team confirms that all items for the deal are in inventory and have been received. If a machine is not in stock, the process loops back to Jeannette for payment and status tracking until the machine arrives." onclick="openModal(this)" style="border-color:#f9a8d4;background:#fdf2f8">
+          <div class="step-name">Ordering: Confirm items received</div>
+          <div class="step-role">Admin · Ordering</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 4 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">4</span>Admin Deal Document Review</div>
+      <div class="phase-body">
+        <div class="step" data-roles="Admin" data-auto="manual" data-title="Admin: Review Deal Documents" data-desc="The admin reviews all deal documents submitted by the rep. This is a critical gate — the deal cannot move forward until the admin makes a decision. They check contracts, product configs, and NDS completeness." onclick="openModal(this)" style="border-color:#f9a8d4;background:#fdf2f8">
+          <div class="step-name">Admin: Review deal documents</div>
+          <div class="step-role">Admin</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+        <div class="connector">outcome ›</div>
+        <div class="decision" data-roles="Admin" data-auto="manual" data-title="Review Outcome: 4 Possible Results" data-desc="Four possible outcomes: (1) Approved — deal moves forward immediately. (2) Conditionally Approved — approved but with conditions the rep must meet. (3) On Hold for Additional Info — rep must submit missing documents before re-review. (4) Rejected — deal is declined and marked Rejected in DocuWare." onclick="openModal(this)" style="border-color:#d8b4fe;background:#faf5ff">
+          <div class="step-name">⬡ Approved / Conditional / On Hold / Reject</div>
+          <div class="step-role">Admin decision</div>
+        </div>
+        <div class="connector">if on hold ›</div>
+        <div class="step" data-roles="Rep" data-auto="manual" data-title="Rep: Submit Additional Information" data-desc="If the admin places the deal on hold, the rep is notified and must submit the additional information that was missing. Once submitted, the deal goes back to the admin for another review cycle." onclick="openModal(this)" style="border-color:#86efac;background:#f0fdf4">
+          <div class="step-name">Rep: Submit additional information</div>
+          <div class="step-role">Rep</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 5 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">5</span>Post-Approval · Approved &amp; Conditional paths</div>
+      <div class="phase-body">
+        <div class="step" data-roles="Automated" data-auto="auto" data-title="Email SmartPortal Info to Customer" data-desc="Once the deal is approved or conditionally approved, DocuWare automatically emails the customer their SmartPortal login information. This is a fully automated step — no one needs to manually send anything." onclick="openModal(this)" style="border-color:#93c5fd;background:#eff6ff">
+          <div class="step-name">Email SmartPortal info to customer</div>
+          <div class="step-role">Automated</div>
+          <span class="step-badge auto-badge">Auto</span>
+        </div>
+        <div class="connector">then ›</div>
+        <div class="step" data-roles="Admin" data-auto="manual" data-title="Admin: Update Paperwork + Input Funding Amount" data-desc="The admin updates the deal paperwork and enters the funding amount into the system. Once this is done, the document status updates to 'Paperwork Complete', signaling the deal is financially locked in and ready to move to fulfillment." onclick="openModal(this)" style="border-color:#f9a8d4;background:#fdf2f8">
+          <div class="step-name">Admin: Update paperwork + input funding amount</div>
+          <div class="step-role">Admin · status → Paperwork Complete</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 6 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">6</span>Machine Preparation &amp; Delivery Scheduling</div>
+      <div class="phase-body">
+        <div class="step" data-roles="Shop Tech" data-auto="manual" data-title="Shop Tech: Prepare Machine" data-desc="The shop technician configures, tests, and prepares the physical machine for delivery. This includes all hardware setup and quality checks. Document status updates to 'Configuration' during this phase." onclick="openModal(this)" style="border-color:#fcd34d;background:#fffbeb">
+          <div class="step-name">Shop Tech: Prepare machine</div>
+          <div class="step-role">Shop Tech · status → Configuration</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+        <div class="connector">then ›</div>
+        <div class="decision" data-roles="Automated" data-auto="auto" data-title="Wait for Delivery Schedule (7-day timeout)" data-desc="The system waits for a delivery date and time window to be entered. If no delivery is scheduled within 7 days of the machine being ready, DocuWare automatically sends a reminder email to the admin to follow up. This prevents deals from sitting idle." onclick="openModal(this)" style="border-color:#d8b4fe;background:#faf5ff">
+          <div class="step-name">⬡ Wait for delivery schedule</div>
+          <div class="step-role">7-day timeout → auto email admin</div>
+        </div>
+        <div class="connector">scheduled ›</div>
+        <div class="step" data-roles="Help Desk" data-auto="manual" data-title="Help Desk: Schedule Delivery Day + Time Window" data-desc="The Help Desk enters the confirmed delivery date and time window into DocuWare. This action triggers the Schedule Delivery workflow automatically and updates the status to 'Delivery Status = Scheduled'." onclick="openModal(this)" style="border-color:#fca5a5;background:#fff1f2">
+          <div class="step-name">Help Desk: Schedule delivery day + time window</div>
+          <div class="step-role">Help Desk · triggers Schedule Delivery WF</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 7 ── -->
+    <div class="phase">
+      <div class="phase-header"><span class="phase-num">7</span>Site Survey, Device Setup &amp; Close</div>
+      <div class="phase-body">
+        <div class="step" data-roles="Help Desk" data-auto="manual" data-title="Help Desk: Device Settings" data-desc="The Help Desk configures device settings for the customer as part of the Welcome Call / Device Settings workflow. This runs alongside the main process and ensures the customer's devices are ready to go before or at delivery." onclick="openModal(this)" style="border-color:#fca5a5;background:#fff1f2">
+          <div class="step-name">Help Desk: Device settings</div>
+          <div class="step-role">Help Desk · Welcome Call WF</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+        <div class="connector">+</div>
+        <div class="step" data-roles="Automated" data-auto="auto" data-title="DCA + Site Survey Completion Tracked" data-desc="DocuWare tracks the completion of the DCA (Device Communication Agent) setup and the site survey. When both are marked complete, the document status updates automatically, signaling the job is nearly done." onclick="openModal(this)" style="border-color:#93c5fd;background:#eff6ff">
+          <div class="step-name">DCA + site survey completion tracked</div>
+          <div class="step-role">Automated · status updates</div>
+          <span class="step-badge auto-badge">Auto</span>
+        </div>
+        <div class="connector">finally ›</div>
+        <div class="step" data-roles="Admin" data-auto="manual" data-title="Admin: Upload D&A Document" data-desc="The admin uploads the Delivery & Acceptance (D&A) document into DocuWare once delivery is confirmed complete. This is the final step that officially closes out the deal. Status updates to 'Boon' (closed/complete)." onclick="openModal(this)" style="border-color:#f9a8d4;background:#fdf2f8">
+          <div class="step-name">Admin: Upload D&amp;A document</div>
+          <div class="step-role">Admin · status → Boon (closed)</div>
+          <span class="step-badge manual-badge">Manual</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end app-content -->
+
+  <footer class="app-footer">
+    Smart Technologies &nbsp;·&nbsp; Internal Use Only &nbsp;·&nbsp; Questions? Contact <span>akoontz@smarttechfl.com</span>
+  </footer>
+
+</div><!-- end app -->
+
+<!-- ═══ MODAL ══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-stripe"></div>
+    <div class="modal-body-wrap">
+      <div class="modal-top">
+        <div class="modal-title" id="m-title"></div>
+        <button class="modal-close" onclick="closeModal(null)">×</button>
+      </div>
+      <div class="modal-role-tag" id="m-role"></div>
+      <div class="modal-desc" id="m-body"></div>
+      <span class="modal-type-chip" id="m-type"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+function launchApp() {
+  var splash = document.getElementById('splash');
+  var app = document.getElementById('app');
+  splash.classList.add('out');
+  setTimeout(function() {
+    splash.style.display = 'none';
+    app.classList.add('visible');
+    document.body.style.background = '#f5f5f4';
+  }, 600);
+}
+
+function openModal(el) {
+  document.getElementById('m-title').textContent = el.dataset.title;
+  document.getElementById('m-role').textContent = 'Owner: ' + el.dataset.roles;
+  document.getElementById('m-body').textContent = el.dataset.desc;
+  var t = el.dataset.auto;
+  var tb = document.getElementById('m-type');
+  if (t === 'auto') {
+    tb.textContent = '⚡ Automated — DocuWare handles this';
+    tb.style.background = '#bfdbfe'; tb.style.color = '#1e3a8a';
+  } else {
+    tb.textContent = '✋ Manual — a person completes this';
+    tb.style.background = '#fde68a'; tb.style.color = '#78350f';
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+function filterRole(btn, role) {
+  document.querySelectorAll('.role-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.step,.decision').forEach(function(el) {
+    if (role === 'All') { el.classList.remove('dimmed'); return; }
+    var roles = el.dataset.roles || '';
+    var match = role === 'Automated' ? el.dataset.auto === 'auto' : roles.indexOf(role) > -1;
+    el.classList.toggle('dimmed', !match);
+  });
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.getElementById('modal').classList.remove('open');
+});
+</script>
+</body>
+</html>
