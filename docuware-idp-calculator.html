@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocuWare IDP Pricing Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16162c;
+    --indigo:#3032a8;
+    --indigo-deep:#23246f;
+    --indigo-tint:#ececfb;
+    --accent:#c12542;
+    --accent-soft:#fbe9ed;
+    --paper:#f3f4f8;
+    --card:#ffffff;
+    --line:#e4e5ef;
+    --muted:#6c6e85;
+    --pzone:#eaeafb;
+    --dzone:#fdecec;
+    --ok:#1f9d72;
+    --warn:#b8651a;
+    --warn-soft:#fbf0e3;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,20,50,.05),0 12px 32px -16px rgba(20,20,50,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    padding:clamp(14px,3vw,40px);
+    display:flex;justify-content:center;
+  }
+  .wrap{width:100%;max-width:880px}
+
+  /* Header */
+  header{margin-bottom:22px}
+  .eyebrow{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--indigo);
+    box-shadow:0 0 0 4px var(--indigo-tint)}
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:clamp(26px,5vw,38px);letter-spacing:-.02em;line-height:1.05}
+  h1 .idp{color:var(--indigo)}
+  .sub{margin-top:8px;color:var(--muted);font-size:14.5px;max-width:60ch}
+  .pill{display:inline-block;margin-left:8px;vertical-align:middle;font-family:'Inter';
+    font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--indigo-deep);
+    background:var(--indigo-tint);border-radius:999px;padding:4px 10px;text-transform:none}
+
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow)}
+  .panel{padding:clamp(16px,3vw,24px)}
+  .label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:7px;display:block}
+
+  /* Inputs */
+  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+  @media(max-width:560px){.inputs{grid-template-columns:1fr}}
+  .field input[type=number]{width:100%;font-family:'JetBrains Mono',monospace;
+    font-size:20px;font-weight:700;color:var(--ink);background:var(--paper);
+    border:1.5px solid var(--line);border-radius:10px;padding:13px 14px;outline:none;
+    transition:border-color .15s,box-shadow .15s;-moz-appearance:textfield}
+  .field input::-webkit-outer-spin-button,.field input::-webkit-inner-spin-button{
+    -webkit-appearance:none;margin:0}
+  .field input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-tint)}
+  .hint{font-size:12px;color:var(--muted);margin-top:7px}
+  .toggle{display:inline-flex;background:var(--paper);border:1px solid var(--line);
+    border-radius:8px;padding:2px;gap:2px}
+  .toggle button{font-family:'Inter';font-size:12px;font-weight:600;color:var(--muted);
+    background:transparent;border:none;border-radius:6px;padding:5px 11px;cursor:pointer;
+    transition:background .15s,color .15s}
+  .toggle button[aria-pressed=true]{background:var(--indigo);color:#fff}
+  .derived{margin-top:6px;display:flex;align-items:baseline;gap:8px}
+  .derived b{font-family:'JetBrains Mono';font-size:17px;color:var(--indigo-deep)}
+
+  /* Breakeven track (signature) */
+  .track-card{margin:18px 0}
+  .track-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+  .track-head .now{font-family:'JetBrains Mono';font-weight:700;color:var(--ink);font-size:13px}
+  .track{position:relative;height:54px;border-radius:11px;overflow:hidden;
+    border:1px solid var(--line);display:flex}
+  .zone{display:flex;align-items:center;justify-content:center;font-size:12px;
+    font-weight:600;letter-spacing:.03em;color:var(--muted);transition:filter .2s}
+  .zone.p{flex:0 0 20%;background:var(--pzone)}
+  .zone.d{flex:1;background:var(--dzone)}
+  .zone .zt{padding:0 8px;text-align:center;line-height:1.2}
+  .zone.lit{filter:none}
+  .track.pmode .zone.d,.track.dmode .zone.p{filter:saturate(.35) opacity(.6)}
+  .breakline{position:absolute;top:-5px;bottom:-5px;left:20%;width:2px;
+    background:var(--ink);opacity:.5;z-index:3}
+  .breaktag{position:absolute;top:-22px;left:20%;transform:translateX(-50%);
+    font-family:'JetBrains Mono';font-size:10.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .marker{position:absolute;top:-7px;bottom:-7px;width:3px;background:var(--accent);
+    border-radius:3px;z-index:4;transition:left .3s cubic-bezier(.2,.7,.3,1);
+    box-shadow:0 0 0 5px var(--accent-soft)}
+  .marker::after{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%) rotate(45deg);
+    width:11px;height:11px;background:var(--accent)}
+  .faircap{position:absolute;top:0;bottom:0;right:0;width:2px;background:var(--warn);
+    opacity:.55;z-index:2}
+  .scale{display:flex;justify-content:space-between;margin-top:7px;font-family:'JetBrains Mono';
+    font-size:10.5px;color:var(--muted)}
+
+  /* Recommendation */
+  .rec{margin:18px 0;border:1.5px solid var(--accent);position:relative;overflow:hidden}
+  .rec::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:var(--accent)}
+  .rec .panel{padding-left:calc(clamp(16px,3vw,24px) + 6px)}
+  .rec-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .rec-badge{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:4px 11px}
+  .rec-model{font-family:'Space Grotesk';font-weight:700;font-size:clamp(20px,3.6vw,26px);
+    letter-spacing:-.01em}
+  .rec-reason{color:var(--muted);font-size:14px;margin-bottom:16px}
+  .rec-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px}
+  @media(max-width:560px){.rec-grid{grid-template-columns:1fr 1fr}}
+  .stat .k{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stat .v{font-family:'JetBrains Mono';font-weight:700;font-size:clamp(18px,3vw,23px);
+    margin-top:3px;letter-spacing:-.01em}
+  .stat .v.tier{font-size:16px;color:var(--indigo-deep)}
+  .stat .v.year{color:var(--ink)}
+  .stat small{display:block;font-family:'Inter';font-weight:500;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .save{margin-top:14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;
+    background:#eafaf3;color:#0f6f4f;border-radius:8px;padding:8px 12px;font-weight:600}
+
+  /* Comparison */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+  @media(max-width:560px){.compare{grid-template-columns:1fr}}
+  .cmp{padding:16px 18px}
+  .cmp.win{border-color:var(--indigo);box-shadow:0 0 0 1px var(--indigo) inset,var(--shadow)}
+  .cmp h3{font-family:'Space Grotesk';font-size:15px;font-weight:600;display:flex;
+    justify-content:space-between;align-items:center;margin-bottom:12px}
+  .cmp h3 .tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--indigo);background:var(--indigo-tint);border-radius:999px;padding:3px 8px}
+  .cmp .row{display:flex;justify-content:space-between;align-items:baseline;
+    padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .cmp .row:first-of-type{border-top:none}
+  .cmp .row .rk{color:var(--muted)}
+  .cmp .row .rv{font-family:'JetBrains Mono';font-weight:700;font-size:14px}
+
+  /* Warning */
+  .warn-box{display:none;margin:18px 0;border-color:var(--warn);background:var(--warn-soft)}
+  .warn-box.show{display:block}
+  .warn-box .panel{padding:15px 18px;display:flex;gap:12px}
+  .warn-box .ic{flex:none;width:26px;height:26px;border-radius:50%;background:var(--warn);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+  .warn-box h4{font-size:14px;font-weight:700;color:var(--warn);margin-bottom:3px}
+  .warn-box p{font-size:13px;color:#7a4d1c}
+
+  /* Reference */
+  details.ref{margin-top:18px}
+  details.ref>summary{cursor:pointer;list-style:none;font-family:'Space Grotesk';
+    font-weight:600;font-size:14px;padding:14px 18px;background:var(--card);
+    border:1px solid var(--line);border-radius:var(--radius);display:flex;
+    justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+  details.ref>summary::-webkit-details-marker{display:none}
+  details.ref>summary .chev{transition:transform .2s;color:var(--muted)}
+  details.ref[open]>summary{border-radius:var(--radius) var(--radius) 0 0}
+  details.ref[open]>summary .chev{transform:rotate(180deg)}
+  .ref-body{border:1px solid var(--line);border-top:none;border-radius:0 0 var(--radius) var(--radius);
+    background:var(--card);padding:6px 0 4px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:440px}
+  th,td{text-align:right;padding:9px 14px;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+    font-weight:600;border-bottom:1px solid var(--line)}
+  tbody td{font-family:'JetBrains Mono';font-weight:500;border-bottom:1px solid var(--paper)}
+  tbody td:first-child{font-family:'Inter';font-weight:600}
+  tbody tr.hl td{background:var(--accent-soft)}
+  .ref-cap{font-size:11px;color:var(--muted);padding:8px 14px 12px}
+
+  footer{margin-top:24px;font-size:12px;color:var(--muted);line-height:1.7}
+  footer b{color:var(--ink);font-weight:600}
+  .foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin-top:6px}
+  @media(max-width:560px){.foot-grid{grid-template-columns:1fr}}
+  .credit{margin-top:16px;font-size:11px;color:var(--muted);text-align:center;opacity:.8}
+  .credit b{color:var(--accent)}
+
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> DocuWare IDP · Americas · powered by Natif</div>
+    <h1>IDP Pricing <span class="idp">Calculator</span><span class="pill">Effective Jul 1</span></h1>
+    <p class="sub">Enter a prospect's volume and average document length. The tool picks the cheaper model (per&#8209;page vs per&#8209;document), the right tier, and the real monthly &amp; annual cost — overage included.</p>
+  </header>
+
+  <!-- INPUTS -->
+  <section class="card panel">
+    <div class="inputs">
+      <div class="field">
+        <label class="label" for="ppd">Average pages per document</label>
+        <input id="ppd" type="number" min="0" step="0.1" value="3" inputmode="decimal">
+        <div class="hint">This is what decides the model. Breakeven is exactly <b>2.0</b>.</div>
+      </div>
+      <div class="field">
+        <label class="label" for="vol">Document volume</label>
+        <input id="vol" type="number" min="0" step="1" value="2000" inputmode="numeric">
+        <div class="hint" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <span class="toggle" role="group" aria-label="Volume period">
+            <button id="perMonth" aria-pressed="true">per month</button>
+            <button id="perYear" aria-pressed="false">per year</button>
+          </span>
+          documents
+        </div>
+      </div>
+    </div>
+    <div class="derived">
+      <span class="label" style="margin:0">Monthly basis</span>
+      <b id="basis">2,000 docs / mo · 6,000 pages / mo</b>
+    </div>
+  </section>
+
+  <!-- BREAKEVEN TRACK -->
+  <section class="card panel track-card">
+    <div class="track-head">
+      <span class="label" style="margin:0">The 2-page rule</span>
+      <span class="now" id="trackNow">Avg 3.0 pages → Per-Document zone</span>
+    </div>
+    <div style="position:relative;padding-top:20px">
+      <div class="track" id="track">
+        <div class="zone p"><span class="zt">Per-Page<br>cheaper</span></div>
+        <div class="zone d"><span class="zt">Per-Document cheaper</span></div>
+        <div class="breakline"></div>
+        <div class="breaktag">2.0 breakeven</div>
+        <div class="faircap" title="Per-document fair-use cap"></div>
+        <div class="marker" id="marker" style="left:30%"></div>
+      </div>
+      <div class="scale"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10 pg (fair-use cap)</span></div>
+    </div>
+  </section>
+
+  <!-- WARNING -->
+  <section class="card warn-box" id="warnBox">
+    <div class="panel">
+      <div class="ic">!</div>
+      <div>
+        <h4>Average exceeds the 10-page fair-use cap</h4>
+        <p id="warnText">At this length, documents over 10 pages are likely billed as multiple documents on the per-document model, so its real cost will run higher than shown. Confirm the exact fair-use handling with DocuWare before quoting.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECOMMENDATION -->
+  <section class="card rec">
+    <div class="panel">
+      <div class="rec-top">
+        <span class="rec-badge">Recommend</span>
+        <span class="rec-model" id="recModel">Per-Document</span>
+      </div>
+      <p class="rec-reason" id="recReason"></p>
+      <div class="rec-grid">
+        <div class="stat">
+          <div class="k">Package</div>
+          <div class="v tier" id="recTier">IDP 1,000 D</div>
+          <small id="recOver">+ 1,000 overage docs/mo</small>
+        </div>
+        <div class="stat">
+          <div class="k">Per month</div>
+          <div class="v" id="recMonthly">$600</div>
+          <small id="recRate">$0.10 / doc effective</small>
+        </div>
+        <div class="stat">
+          <div class="k">Per year</div>
+          <div class="v year" id="recYear">$7,200</div>
+          <small>billed annually</small>
+        </div>
+      </div>
+      <div class="save" id="saveBox">Saves $1,800/yr vs per-page</div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <div class="compare">
+    <section class="card cmp" id="cmpP">
+      <h3>Per-Page model <span class="tag" id="tagP">option</span></h3>
+      <div class="row"><span class="rk">Best package</span><span class="rv" id="pTier">—</span></div>
+      <div class="row"><span class="rk">Overage</span><span class="rv" id="pOver">—</span></div>
+      <div class="row"><span class="rk">Per month</span><span class="rv" id="pMonth">—</span></div>
+      <div class="row"><span class="rk">Per year</span><span class="rv" id="pYear">—</span></div>
+      <div class="row"><span class="rk">Effective</span><span class="rv" id="pEff">—</span></div>
+    </section>
+    <section class="card cmp" id="cmpD">
+      <h3>Per-Document model <span class="tag" id="tagD">option</span></h3>
+      <div class="row"><span class="rk">Best package</span><span class="rv" id="dTier">—</span></div>
+      <div class="row"><span class="rk">Overage</span><span class="rv" id="dOver">—</span></div>
+      <div class="row"><span class="rk">Per month</span><span class="rv" id="dMonth">—</span></div>
+      <div class="row"><span class="rk">Per year</span><span class="rv" id="dYear">—</span></div>
+      <div class="row"><span class="rk">Effective</span><span class="rv" id="dEff">—</span></div>
+    </section>
+  </div>
+
+  <!-- REFERENCE -->
+  <details class="ref">
+    <summary>Full tier reference (both models) <span class="chev">▾</span></summary>
+    <div class="ref-body">
+      <table id="tblP">
+        <thead><tr><th>Per-Page tier</th><th>Price/mo</th><th>Incl. pages</th><th>$/page</th><th>Overage block</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="ref-cap">Overage billed in 200-page blocks at the tier's own per-page rate — no penalty markup.</div>
+      <table id="tblD" style="border-top:1px solid var(--line)">
+        <thead><tr><th>Per-Doc tier</th><th>Price/mo</th><th>Incl. docs</th><th>$/doc</th><th>Overage block</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="ref-cap">Overage billed in 100-document blocks at the tier's own per-doc rate. Fair-use: 10 pages/document.</div>
+    </div>
+  </details>
+
+  <footer>
+    <div class="foot-grid">
+      <div><b>Billing:</b> annual, on volume accrued per year.</div>
+      <div><b>Overage:</b> no penalty rate — same per-unit price as your tier.</div>
+      <div><b>Fair use (per-doc):</b> 10 pages per document.</div>
+      <div><b>Model rule:</b> ≤2 pages/doc → per-page · &gt;2 → per-document.</div>
+    </div>
+    <div class="credit">Built for discovery · Smart Technologies · accent <b>#c12542</b></div>
+  </footer>
+</div>
+
+<script>
+const P_TIERS=[
+  {name:'IDP 500 P',price:100,incl:500,block:200,blockPrice:40,rate:0.20},
+  {name:'IDP 2,000 P',price:300,incl:2000,block:200,blockPrice:30,rate:0.15},
+  {name:'IDP 10,000 P',price:750,incl:10000,block:200,blockPrice:15,rate:0.075},
+  {name:'IDP 30,000 P',price:1800,incl:30000,block:200,blockPrice:12,rate:0.06},
+  {name:'IDP 100,000 P',price:5000,incl:100000,block:200,blockPrice:10,rate:0.05},
+  {name:'IDP 200,000 P',price:9000,incl:200000,block:200,blockPrice:9,rate:0.045},
+];
+const D_TIERS=[
+  {name:'IDP 250 D',price:100,incl:250,block:100,blockPrice:40,rate:0.40},
+  {name:'IDP 1,000 D',price:300,incl:1000,block:100,blockPrice:30,rate:0.30},
+  {name:'IDP 5,000 D',price:750,incl:5000,block:100,blockPrice:15,rate:0.15},
+  {name:'IDP 15,000 D',price:1800,incl:15000,block:100,blockPrice:12,rate:0.12},
+  {name:'IDP 50,000 D',price:5000,incl:50000,block:100,blockPrice:10,rate:0.10},
+  {name:'IDP 100,000 D',price:9000,incl:100000,block:100,blockPrice:9,rate:0.09},
+];
+
+const $=id=>document.getElementById(id);
+const money=n=>'$'+Math.round(n).toLocaleString('en-US');
+const num=n=>Math.round(n).toLocaleString('en-US');
+function rate(n){ // per-unit, trim trailing zeros, up to 4 decimals
+  let s=n.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
+  return '$'+s;
+}
+
+function best(volume,tiers){
+  let win=null;
+  for(const t of tiers){
+    const over=Math.max(0,volume-t.incl);
+    const blocks=Math.ceil(over/t.block);
+    const monthly=t.price+blocks*t.blockPrice;
+    const opt={t,monthly,over,blocks};
+    if(!win||monthly<win.monthly||(monthly===win.monthly&&t.incl>win.t.incl)) win=opt;
+  }
+  return win;
+}
+
+let period='month';
+
+function compute(){
+  const ppd=Math.max(0,parseFloat($('ppd').value)||0);
+  const rawVol=Math.max(0,parseFloat($('vol').value)||0);
+  const docs= period==='year' ? rawVol/12 : rawVol;
+  const pages=docs*ppd;
+
+  $('basis').textContent = docs>0
+    ? `${num(docs)} docs / mo · ${num(pages)} pages / mo`
+    : 'enter a volume to begin';
+
+  // marker position on 0–10 track
+  const pos=Math.max(0,Math.min(100,(ppd/10)*100));
+  $('marker').style.left=pos+'%';
+  const tEl=$('track');
+  tEl.classList.toggle('pmode',ppd<=2);
+  tEl.classList.toggle('dmode',ppd>2);
+  $('trackNow').textContent = ppd<=2
+    ? `Avg ${ppd.toFixed(1)} pages → Per-Page zone`
+    : `Avg ${ppd.toFixed(1)} pages → Per-Document zone`;
+
+  // fair-use warning
+  $('warnBox').classList.toggle('show',ppd>10);
+
+  if(docs<=0||ppd<=0){ clearOutputs(); return; }
+
+  const bP=best(pages,P_TIERS);
+  const bD=best(docs,D_TIERS);
+
+  // per-page comparison card
+  $('pTier').textContent=bP.t.name;
+  $('pOver').textContent= bP.over>0 ? `${bP.blocks} × 200 pg` : 'none';
+  $('pMonth').textContent=money(bP.monthly);
+  $('pYear').textContent=money(bP.monthly*12);
+  $('pEff').textContent=rate(bP.monthly/pages)+' /pg';
+
+  // per-doc comparison card
+  $('dTier').textContent=bD.t.name;
+  $('dOver').textContent= bD.over>0 ? `${bD.blocks} × 100 doc` : 'none';
+  $('dMonth').textContent=money(bD.monthly);
+  $('dYear').textContent=money(bD.monthly*12);
+  $('dEff').textContent=rate(bD.monthly/docs)+' /doc';
+
+  const dWins=bD.monthly<bP.monthly;
+  $('cmpP').classList.toggle('win',!dWins);
+  $('cmpD').classList.toggle('win',dWins);
+  $('tagP').textContent=dWins?'option':'winner';
+  $('tagD').textContent=dWins?'winner':'option';
+
+  // recommendation
+  const win=dWins?bD:bP;
+  const lose=dWins?bP:bD;
+  const isD=dWins;
+  $('recModel').textContent=isD?'Per-Document (D)':'Per-Page (P)';
+  $('recTier').textContent=win.t.name;
+  $('recOver').textContent = win.over>0
+    ? `+ ${num(win.over)} overage ${isD?'docs':'pages'}/mo (${win.blocks} block${win.blocks>1?'s':''})`
+    : 'volume fully included';
+  $('recMonthly').textContent=money(win.monthly);
+  $('recYear').textContent=money(win.monthly*12);
+  $('recRate').textContent= isD
+    ? rate(win.monthly/docs)+' / doc effective'
+    : rate(win.monthly/pages)+' / page effective';
+
+  $('recReason').textContent = isD
+    ? `Documents average ${ppd.toFixed(1)} pages — above the 2-page breakeven — so paying per document beats paying per page.`
+    : (ppd===2
+        ? `At exactly 2 pages/doc both models tie; per-page is the clean default.`
+        : `Documents average ${ppd.toFixed(1)} pages — at or below the 2-page breakeven — so paying per page is cheaper.`);
+
+  const diffYr=Math.abs(win.monthly-lose.monthly)*12;
+  const sb=$('saveBox');
+  if(diffYr<1){ sb.textContent=`Both models cost the same here (${money(win.monthly*12)}/yr)`; }
+  else{ sb.textContent=`Saves ${money(diffYr)}/yr vs ${isD?'per-page':'per-document'}`; }
+
+  // high-volume note
+  if(win.over>0 && win.t.incl===(isD?100000:200000)){
+    $('recOver').textContent += ' — confirm custom enterprise pricing';
+  }
+
+  highlightRef(bP.t.name,bD.t.name);
+}
+
+function clearOutputs(){
+  ['pTier','pOver','pMonth','pYear','pEff','dTier','dOver','dMonth','dYear','dEff'].forEach(id=>$(id).textContent='—');
+  $('recTier').textContent='—';$('recOver').textContent='enter volume & pages';
+  $('recMonthly').textContent='—';$('recYear').textContent='—';$('recRate').textContent='';
+  $('recModel').textContent='—';$('recReason').textContent='Enter a document volume and average page count to see the recommendation.';
+  $('saveBox').textContent='—';
+  $('cmpP').classList.remove('win');$('cmpD').classList.remove('win');
+  highlightRef(null,null);
+}
+
+// build reference tables
+function buildRef(){
+  const pb=document.querySelector('#tblP tbody');
+  P_TIERS.forEach(t=>{
+    pb.insertAdjacentHTML('beforeend',
+     `<tr data-name="${t.name}"><td>${t.name}</td><td>${money(t.price)}</td><td>${num(t.incl)}</td><td>${rate(t.rate)}</td><td>${money(t.blockPrice)} / 200pg</td></tr>`);
+  });
+  const db=document.querySelector('#tblD tbody');
+  D_TIERS.forEach(t=>{
+    db.insertAdjacentHTML('beforeend',
+     `<tr data-name="${t.name}"><td>${t.name}</td><td>${money(t.price)}</td><td>${num(t.incl)}</td><td>${rate(t.rate)}</td><td>${money(t.blockPrice)} / 100doc</td></tr>`);
+  });
+}
+function highlightRef(pName,dName){
+  document.querySelectorAll('tbody tr').forEach(tr=>{
+    tr.classList.toggle('hl', tr.dataset.name===pName||tr.dataset.name===dName);
+  });
+}
+
+// events
+$('ppd').addEventListener('input',compute);
+$('vol').addEventListener('input',compute);
+$('perMonth').addEventListener('click',()=>{period='month';$('perMonth').setAttribute('aria-pressed','true');$('perYear').setAttribute('aria-pressed','false');compute();});
+$('perYear').addEventListener('click',()=>{period='year';$('perYear').setAttribute('aria-pressed','true');$('perMonth').setAttribute('aria-pressed','false');compute();});
+
+buildRef();
+compute();
+</script>
+</body>
+</html>
